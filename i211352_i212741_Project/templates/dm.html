@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #848eca;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #bbc0de;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(3, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #130101;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            background-color: #4f5478;
+            color: rgb(254, 254, 254);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #4556a0;
+        }
+
+        #predictionResult {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ebebeb;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Model Prediction</h1>
+    
+    <form id="predictionForm">
+        <label>Select Model:</label><br>
+        <input type="radio" id="arima" name="model" value="ARIMA">
+        <label for="arima">ARIMA</label><br>
+        <input type="radio" id="ann" name="model" value="ANN">
+        <label for="ann">ANN</label><br>
+        <input type="radio" id="sarima" name="model" value="SARIMA">
+        <label for="sarima">SARIMA</label><br>
+        <input type="radio" id="exponential" name="model" value="EXPONENTIAL">
+        <label for="exponential">Exponential Smoothing</label><br>
+        <input type="radio" id="svr" name="model" value="SVR">
+        <label for="svr">Support Vector Regression</label><br><br>
+
+        <label for="features">Enter Features:</label>
+        <input type="text" id="features" name="features" placeholder="Enter features separated by comma">
+        <br><br>
+        <button type="submit">Predict</button>
+    </form>
+
+    <div id="predictionResult"></div>
+
+    <script>
+        document.getElementById("predictionForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form submission
+            
+            // Get selected model and features
+            var model = document.querySelector('input[name="model"]:checked').value;
+            var features = document.getElementById("features").value;
+            
+            // Prepare data to send to server
+            var data = {
+                "model": model,
+                "features": features.split(",").map(function(item) { return parseFloat(item.trim()); })
+            };
+
+            // Send data to server
+            fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display prediction result
+                document.getElementById("predictionResult").innerHTML = "<h2>Prediction Result</h2><p>" + data.prediction + "</p>";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById("predictionResult").innerHTML = "<h2>Error</h2><p>Failed to make prediction.</p>";
+            });
+        });
+    </script>
+</body>
+</html>
